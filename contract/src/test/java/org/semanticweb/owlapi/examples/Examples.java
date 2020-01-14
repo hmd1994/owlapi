@@ -26,6 +26,7 @@ import static org.semanticweb.owlapi.vocab.OWLFacet.MIN_INCLUSIVE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -97,6 +98,7 @@ import org.semanticweb.owlapi.model.SWRLObjectPropertyAtom;
 import org.semanticweb.owlapi.model.SWRLRule;
 import org.semanticweb.owlapi.model.SWRLVariable;
 import org.semanticweb.owlapi.model.SetOntologyID;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.OWLOntologyXMLNamespaceManager;
 import org.semanticweb.owlapi.reasoner.BufferingMode;
 import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.Node;
@@ -156,6 +158,7 @@ public class Examples extends TestBase {
         + "  <owl:FunctionalProperty rdf:ID=\"hasGender\"><rdfs:range rdf:resource=\"#Gender\"/><rdf:type rdf:resource=\"http://www.w3.org/2002/07/owl#ObjectProperty\"/><rdfs:domain rdf:resource=\"#Animal\"/></owl:FunctionalProperty>\n"
         + "  <owl:FunctionalProperty rdf:ID=\"isHardWorking\"><rdfs:range rdf:resource=\"http://www.w3.org/2001/XMLSchema#boolean\"/><rdfs:domain rdf:resource=\"#Person\"/><rdf:type rdf:resource=\"http://www.w3.org/2002/07/owl#DatatypeProperty\"/></owl:FunctionalProperty>\n"
         + "  <Degree rdf:ID=\"MA\"/>\n</rdf:RDF>";
+
 
     private static void print(Node<OWLClass> parent, OWLReasoner reasoner, int depth) {
         // We don't want to print out the bottom node (containing owl:Nothing
@@ -234,9 +237,9 @@ public class Examples extends TestBase {
     private static void printOntology(OWLOntologyManager manager, OWLOntology ontology) {
         IRI ontologyIRI = ontology.getOntologyID().getOntologyIRI().get();
         IRI documentIRI = manager.getOntologyDocumentIRI(ontology);
-        // System.out.println(ontologyIRI == null ? "anonymous" : ontologyIRI
-        // .toQuotedString());
-        // System.out.println(" from " + documentIRI.toQuotedString());
+         System.out.println(ontologyIRI == null ? "anonymous" : ontologyIRI
+         .toQuotedString());
+         System.out.println(" from " + documentIRI.toQuotedString());
     }
 
     /**
@@ -305,6 +308,7 @@ public class Examples extends TestBase {
      */
     @Test
     public void shouldSaveOntologies() throws Exception {
+        System.out.println("");
         // Get hold of an ontology manager
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         OWLOntology ontology = load(manager);
@@ -348,6 +352,96 @@ public class Examples extends TestBase {
      *
      * @throws Exception exception
      */
+    @Test
+    public void work() throws Exception,FileNotFoundException, OWLOntologyCreationException {
+        /**load本体
+         *如何加载本体。
+         * 如何保存本体。
+         * 如何获取实体(类、属性、个体等)的引用。
+         * 如何处理数据类型和其他数据范围。
+         * 如何处理用户定义的数据范围(例如int > 10)。
+         * 如何使用字符串、数据值和语言标记。
+         * 如何创建一个空的本体，添加公理和保存。
+         * 如何指定个体是类的实例。
+         * 如何指定两个个体彼此相关。
+         * 如何向本体添加对象属性断言(三元组)。
+         * 如何从本体中删除实体(类、属性和个体)。
+         * 如何创建限制并将它们作为超类“添加到类中”。
+         * 如何创建本体并添加一些规则。
+         * 如何与推理机交互。
+         * 如何收集在给定类的限制中使用的属性。
+         * 如何使用标签和注释等注释。
+         * 如何将推断公理保存到新的本体中，或保存到现有的本体中。
+         * 如何以简单的方式合并两个(或多个)本体。
+         * 如何“浏览”本体的断言结构。
+         * 如何使用OWLOntologyIRIMapper重定向加载和加载的进口。
+         * 如何从本体中提取基于位置的模块。
+         */
+        // A simple example of how to load and save an ontology We first need to
+        // obtain a copy of an OWLOntologyManager, which, as the name suggests,
+        // manages a set of ontologies. An ontology is unique within an ontology
+        // manager. Each ontology knows its ontology manager. To load multiple
+        // copies of an ontology, multiple managers would have to be used.
+        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+        // In this test we don't rely on a remote ontology and load it from
+        // a string
+        //加载本体
+        OWLOntology ontology_S = manager
+                .loadOntologyFromOntologyDocument(new StringDocumentSource(KOALA));
+        OWLOntology ontology_D=manager.loadOntologyFromOntologyDocument(IRI.create("jar:!koala.owl"));
+        printOntology(manager,ontology_S);
+
+        /**
+         * 导入本体实验
+         */
+        System.out.println("导入本体实验\n");
+        File testFile= new File("D:\\JavaProject\\GitHub\\owlapi-hmd\\contract\\src\\test\\java\\org\\semanticweb\\owlapi\\examples\\swo_inf.owl");
+
+        OWLOntologyManager m = OWLManager.createOWLOntologyManager();
+        OWLDataFactory f = OWLManager.getOWLDataFactory();
+        OWLOntology o;
+        o = m.loadOntologyFromOntologyDocument(testFile);
+        OWLDocumentFormat format = m.getOntologyFormat(o);
+
+        OWLOntologyXMLNamespaceManager nsManager = new OWLOntologyXMLNamespaceManager(o, format);
+
+        for (String prefix : nsManager.getPrefixes()) {
+            System.out.println(prefix);//输出类名
+        }
+        for (String ns : nsManager.getNamespaces()) {
+            System.out.println(ns);//输出IRI
+        }
+        System.out.println("导入本体\n");
+
+        /**
+         * 导入本体实验
+         */
+        String S="dc";
+        for(String prefix : nsManager.getPrefixes()){
+            if(S.equals(prefix)){
+                System.out.println(prefix);
+                break;
+            }
+        }
+
+        //按照关键字查询本体
+        System.out.println("按照关键字查询本体\n");
+
+
+        // Print out all of the classes which are contained in the signature of
+        // the ontology. These are the classes that are referenced by axioms in
+        // the ontology.
+//         for (OWLClass cls : o.getClassesInSignature()) {
+//         System.out.println(cls);
+//         }
+//       Now save a copy to another location in OWL/XML format (i.e. disregard
+//       the format that the ontology was loaded in).
+//       保存本体
+        IRI destination = IRI.create(folder.newFile("owlapiexample_example1.xml"));
+        manager.saveOntology(ontology_S, new OWLXMLDocumentFormat(), destination);
+
+
+    }
     @Test
     public void shouldAccessEntities() throws Exception {
         // In order to create objects that represent entities we need a
@@ -969,7 +1063,7 @@ public class Examples extends TestBase {
      * An example which shows how to interact with a reasoner. In this example
      * Pellet is used as the reasoner. You must get hold of the pellet libraries
      * from pellet.owldl.com.
-     *
+     *与推理机交互
      * @throws Exception exception
      */
     @Test
@@ -1098,7 +1192,7 @@ public class Examples extends TestBase {
 
     /**
      * This example shows how to examine the restrictions on a class.
-     *
+     *检查类的限制
      * @throws Exception exception
      */
     @Test
@@ -1142,7 +1236,7 @@ public class Examples extends TestBase {
 
     /**
      * This example shows how to create and read annotations.
-     *
+     *创建和读取注释
      * @throws Exception exception
      */
     @Test
@@ -1201,7 +1295,7 @@ public class Examples extends TestBase {
     /**
      * This example shows how to generate an ontology containing some inferred
      * information.
-     *
+     *展示包含推断的本体信息
      * @throws Exception exception
      */
     @Test
@@ -1245,7 +1339,7 @@ public class Examples extends TestBase {
     /**
      * This example shows how to merge to ontologies (by simply combining axioms
      * from one ontology into another ontology).
-     *
+     *本体合并
      * @throws Exception exception
      */
     @Test
@@ -1339,8 +1433,8 @@ public class Examples extends TestBase {
         OWLObjectProperty hasDegree = man.getOWLDataFactory()
             .getOWLObjectProperty(prefix, "hasDegree");
         if (hasProperty(man, reasoner, koala, hasDegree)) {
-            // System.out.println("Instances of " + koala
-            // + " have a degree");
+             System.out.println("Instances of " + koala
+             + " have a degree");
         }
     }
 
@@ -1407,7 +1501,7 @@ public class Examples extends TestBase {
 
     /**
      * This example shows how to extract modules.
-     *
+     *模块提取
      * @throws Exception exception
      */
     @Test
@@ -1450,6 +1544,7 @@ public class Examples extends TestBase {
             ModuleType.STAR);
         IRI moduleIRI = IRI.create("urn:test:QuokkaModule.owl", "");
         OWLOntology mod = sme.extractAsOntology(seedSig, moduleIRI);
+
         // The module can now be saved as usual
     }
 
@@ -1462,7 +1557,9 @@ public class Examples extends TestBase {
      * Protege 4, or Swoop. The OWL API would then be used to examine the
      * asserted structure of the ontology, and in conjunction with an OWL
      * reasoner such as FaCT++ or Pellet used to query the inferred ontology.
-     *
+     *下面的示例使用OWL引物中使用的实体和公理。本例的目的是说明创建类表达式的一些方法和各种类型的公理。
+     * 通常情况下，本体不会像这样以长时间的方式以编程方式构造，而是在诸如Protege 4或Swoop之类的本体编辑器中构造。
+     * 然后，OWL API将用于检查本体的断言结构，并与OWL推理程序(如用于查询推断本体的FaCT++或Pellet)一起使用。
      * @throws Exception exception
      */
     @Test
@@ -1470,7 +1567,7 @@ public class Examples extends TestBase {
         // The OWLOntologyManager is at the heart of the OWL API, we can create
         // an instance of this using the OWLManager class, which will set up
         // commonly used options (such as which parsers are registered etc.
-        // etc.)
+        // etc.)使用OWLManager创造实例
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         // We want to create an ontology that corresponds to the ontology used
         // in the OWL Primer. Every ontology has a IRI that uniquely identifies
@@ -1478,15 +1575,25 @@ public class Examples extends TestBase {
         // that the IRI doesn't necessarily point to a location on the web - in
         // this example, we won't publish the ontology at the URL corresponding
         // to the ontology IRI below.
+        /**设置IRI
+         *
+         */
         IRI ontologyIRI = IRI.create("http://example.com/owlapi/", "families");
         // Now that we have a IRI for out ontology, we can create the actual
         // ontology. Note that the create ontology method throws an
         // OWLOntologyCreationException if there was a problem creating the
         // ontology.
+        /**创建本体
+         *
+         */
         OWLOntology ont = manager.createOntology(ontologyIRI);
         // We can use the manager to get a reference to an OWLDataFactory. The
         // data factory provides a point for creating OWL API objects such as
         // classes, properties and individuals.
+        //
+        /**
+         * 使用dataFactory创建本体
+         */
         OWLDataFactory factory = manager.getOWLDataFactory();
         // We first need to create some references to individuals. All of our
         // individual must have IRIs. A common convention is to take the IRI of
@@ -1507,6 +1614,7 @@ public class Examples extends TestBase {
         // our case, we want to say that John has a wife Mary. To do this we
         // need to have a reference to the hasWife object property (object
         // properties link an individual to an individual, and data properties
+
         // link and individual to a constant - here, we need an object property
         // because John and Mary are individuals).
         OWLObjectProperty hasWife = factory.getOWLObjectProperty(ontologyIRI + "#", "hasWife");
